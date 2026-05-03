@@ -1,0 +1,95 @@
+---
+title: "Receive inbound SMS messages via webhook"
+description: "mycpaas sends an HTTP POST to your webhook URL when an SMS arrives. Learn the payload fields, how to reply with LaML XML, and see a handler example."
+---
+
+When someone sends an SMS to your mycpaas number, mycpaas makes an HTTP POST request to the webhook URL you have configured. Your server receives the message details, processes them however your application needs, and returns a LaML XML response to control what happens next — such as sending an automatic reply.
+
+## How inbound delivery works
+
+1. A user sends an SMS to your mycpaas phone number.
+2. mycpaas sends an HTTP POST to your configured webhook URL with the message details as form-encoded body parameters.
+3. Your server responds with LaML XML. mycpaas executes the instructions in the XML (e.g. sends a reply message).
+
+<Note>
+  You configure your webhook URL in the [Dashboard](https://developer.mycpaas.io). Navigate to your phone number's settings and enter the URL under **Messaging webhook**.
+</Note>
+
+## Inbound webhook payload
+
+mycpaas sends the following parameters in the POST body:
+
+<ParamField body="From" type="string">
+  The phone number that sent the message, in E.164 format (e.g. `+491234567890`).
+</ParamField>
+
+<ParamField body="To" type="string">
+  Your mycpaas phone number that received the message, in E.164 format (e.g. `+491098765432`).
+</ParamField>
+
+<ParamField body="Body" type="string">
+  The text content of the inbound message.
+</ParamField>
+
+<ParamField body="MessageSid" type="string">
+  A unique identifier for the inbound message, prefixed with `SM`.
+</ParamField>
+
+## Replying with LaML XML
+
+To send a reply, return a LaML XML document in your HTTP response. Set the `Content-Type` header to `application/xml` (or `text/xml`). mycpaas reads the XML and executes the instructions before continuing.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>Thanks for your message — we'll be in touch shortly.</Message>
+</Response>
+```
+
+If your webhook returns an empty body or a non-XML response, mycpaas takes no further action for that message.
+
+## Webhook handler example
+
+The following Node.js example uses Express to receive an inbound SMS and send back an automatic reply:
+
+```javascript
+import express from 'express';
+
+const app = express();
+app.use(express.urlencoded({ extended: false }));
+
+app.post('/sms/inbound', (req, res) => {
+  const { From, To, Body, MessageSid } = req.body;
+
+  console.log(`Message ${MessageSid} from ${From}: ${Body}`);
+
+  const reply = `
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>Hi! We received your message: "${Body}"</Message>
+</Response>
+  `.trim();
+
+  res.set('Content-Type', 'application/xml');
+  res.send(reply);
+});
+
+app.listen(3000, () => console.log('Webhook server running on port 3000'));
+```
+
+Your endpoint must be reachable from the internet. During local development, use a tunneling tool such as [ngrok](https://ngrok.com) to expose your server to mycpaas.
+
+```bash
+ngrok http 3000
+```
+
+Copy the HTTPS URL ngrok provides (e.g. `https://abc123.ngrok.io`) and enter it as your webhook URL in the Dashboard.
+
+## Content-Type requirement
+
+Your response must include the `Content-Type: application/xml` header. Without it, mycpaas may not parse the LaML correctly and will not execute the instructions in your response.
+
+| Accepted values | Notes |
+|-----------------|-------|
+| `application/xml` | Recommended |
+| `text/xml` | Also accepted |

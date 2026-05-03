@@ -1,0 +1,86 @@
+---
+title: "Voice webhooks: track call status changes"
+description: "mycpaas POSTs to your StatusCallback URL whenever a call status changes. Learn the payload, all status values, and how to handle call events."
+---
+
+When you make or receive a call through mycpaas, call status changes are delivered to your server in real time. Each time the call transitions to a new state — from initiated, to ringing, to answered, to completed — mycpaas sends an HTTP POST to the `StatusCallback` URL you configure.
+
+## When this webhook fires
+
+mycpaas sends a POST to your `StatusCallback` URL on every call status transition. You can optionally limit which statuses trigger a notification using the `StatusCallbackEvent` parameter.
+
+## Payload fields
+
+mycpaas sends the following fields as `application/x-www-form-urlencoded` in the POST body:
+
+<ParamField body="CallSid" type="string" required>
+  A unique identifier for the call (e.g., `CA1234567890abcdef`). Use this to correlate status updates to a specific call.
+</ParamField>
+
+<ParamField body="CallStatus" type="string" required>
+  The current status of the call. See the table below for all possible values.
+</ParamField>
+
+## Call status values
+
+| Status | Description |
+|--------|-------------|
+| `initiated` | The call has been created and mycpaas is preparing to dial. |
+| `ringing` | The destination phone is ringing. |
+| `in-progress` | The call was answered and is now active. |
+| `completed` | The call ended normally. |
+| `failed` | mycpaas could not connect the call due to a network or carrier error. |
+| `busy` | The destination was busy. |
+| `no-answer` | The call rang without being answered and timed out. |
+
+## Configuring StatusCallback
+
+Pass `StatusCallback` and optionally `StatusCallbackEvent` when creating a call via the REST API:
+
+```bash
+curl -X POST https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/ACxxx/Calls.json \
+  -u ACxxx:AUTH_TOKEN \
+  -d "To=+491234567890" \
+  -d "From=+491098765432" \
+  -d "Url=https://your-server.example.com/laml/call" \
+  -d "StatusCallback=https://your-server.example.com/webhooks/voice" \
+  -d "StatusCallbackEvent=completed failed"
+```
+
+`StatusCallbackEvent` accepts a space-separated list of statuses. Omit it to receive all status transitions.
+
+## Raw POST payload example
+
+```http
+POST /webhooks/voice HTTP/1.1
+Host: your-server.example.com
+Content-Type: application/x-www-form-urlencoded
+
+CallSid=CA1234567890abcdef&CallStatus=completed
+```
+
+## Handler example
+
+The following Express handler logs each call status update and acknowledges receipt:
+
+```javascript
+import express from 'express';
+
+const app = express();
+app.use(express.urlencoded({ extended: false }));
+
+app.post('/webhooks/voice', (req, res) => {
+  const { CallSid, CallStatus } = req.body;
+
+  console.log(`Call ${CallSid} status: ${CallStatus}`);
+
+  // No LaML response needed for status callbacks — just acknowledge
+  res.status(200).send();
+});
+
+app.listen(3000);
+```
+
+<Note>
+  Status callbacks are fire-and-forget notifications. You do not need to return LaML XML — mycpaas ignores the response body. Return HTTP 200 promptly to prevent retries.
+</Note>

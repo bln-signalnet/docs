@@ -1,0 +1,44 @@
+---
+title: "Webhooks overview: receive real-time events"
+description: "mycpaas sends HTTP POST requests to your server when inbound messages arrive or call statuses change. Learn how to configure and handle webhook events."
+---
+
+Webhooks let your server react to events as they happen. Whenever mycpaas receives an inbound SMS or MMS, or whenever the status of a call changes, mycpaas sends an HTTP POST request to a URL you specify. Your server processes the payload and — for SMS — can reply with LaML XML to send a response message back to the caller.
+
+## Webhook types
+
+mycpaas sends two categories of webhook events:
+
+| Type | When it fires |
+|------|---------------|
+| **SMS webhook** | An inbound SMS or MMS arrives on your mycpaas number |
+| **Voice webhook** | A call status changes (initiated, ringing, answered, completed, failed, etc.) |
+
+See the dedicated pages below for full payload details and handler examples.
+
+## How to configure a webhook URL
+
+You can set a webhook URL in two ways:
+
+**Per-request via `StatusCallback`** — pass the `StatusCallback` parameter when you create a call or send a message through the API. This overrides the default for that specific request.
+
+**Account default in the Dashboard** — log in to the [myCPaaS App](https://app.mycpaas.io), navigate to your number settings, and set a default webhook URL. mycpaas uses this URL for any request that does not include a `StatusCallback` parameter.
+
+<Note>
+  Your webhook endpoint must be publicly reachable over the internet and must respond with HTTP 200. mycpaas treats any other status code as a delivery failure and may retry the request.
+</Note>
+
+<Tip>
+  During local development, your server is not publicly reachable by default. Use a tunneling tool like [ngrok](https://ngrok.com) to expose a local port to the internet. Run `ngrok http 3000` and use the generated HTTPS URL as your webhook URL.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="SMS webhooks" icon="message" href="/webhooks/sms">
+    Handle inbound SMS and MMS messages and reply with LaML XML.
+  </Card>
+  <Card title="Voice webhooks" icon="phone" href="/webhooks/voice">
+    Track call status changes and respond to call events in real time.
+  </Card>
+</CardGroup>

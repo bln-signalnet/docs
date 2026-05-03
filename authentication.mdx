@@ -1,0 +1,72 @@
+---
+title: "Authenticate requests to the mycpaas API"
+description: "mycpaas uses HTTP Basic Auth. Pass your Account SID as the username and Auth Token as the password on every request to authenticate."
+---
+
+Every request to the mycpaas API must be authenticated using HTTP Basic Auth. You identify yourself with two credentials: an **Account SID** and an **Auth Token**. Both are available at [Credentials](https://mycpaas.io/access-request/).
+
+## Your credentials
+
+**Account SID** is a unique identifier for your mycpaas account. It always starts with the prefix `AC` and is safe to include in logs and application configuration — it is not secret on its own.
+
+**Auth Token** is the secret key paired with your Account SID. It acts as a password: anyone who has it can make API requests on your behalf. Rotate it from the Dashboard if you ever suspect it has been exposed.
+
+<Warning>
+  Never commit your Auth Token to source control, include it in client-side code, or share it in logs or error messages. Treat it with the same care as a database password.
+</Warning>
+
+## Where to find them
+
+1. eGet you credentials at [Credentials](https://mycpaas.io/access-request/).
+
+## Passing credentials
+
+<Tabs>
+  <Tab title="curl -u flag">
+    The simplest way to authenticate is with curl's `-u` flag. Pass your Account SID and Auth Token separated by a colon:
+
+    ```bash
+    curl -X POST https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/ACxxx/Messages.json \
+      -u ACxxx:AUTH_TOKEN \
+      -d "To=+491234567890" \
+      -d "From=+491098765432" \
+      -d "Body=Hello from mycpaas"
+    ```
+
+    curl automatically Base64-encodes the credentials and adds the `Authorization` header for you.
+  </Tab>
+  <Tab title="Authorization header">
+    If you're constructing requests manually or using an HTTP client that doesn't have a `-u` shortcut, add the `Authorization` header directly.
+
+    First, Base64-encode your credentials in the format `ACCOUNT_SID:AUTH_TOKEN`:
+
+    ```bash
+    echo -n "ACxxx:AUTH_TOKEN" | base64
+    ```
+
+    Then pass the encoded value as a header:
+
+    ```http
+    POST /api/laml/2010-04-01/Accounts/ACxxx/Messages.json HTTP/1.1
+    Host: developer.mycpaas.io
+    Authorization: Basic QUNYWFg6QVVUSF9UT0tFTg==
+    Content-Type: application/x-www-form-urlencoded
+
+    To=%2B491234567890&From=%2B491098765432&Body=Hello+from+mycpaas
+    ```
+
+    Replace `QUNYWFg6QVVUSF9UT0tFTg==` with the Base64-encoded value of your own credentials.
+  </Tab>
+</Tabs>
+
+## HTTP 401 errors
+
+A `401 Unauthorized` response means the API could not authenticate your request. The table below covers the most common causes and how to fix them.
+
+| Cause | How to fix |
+|-------|-----------|
+| Wrong Account SID | Confirm the SID starts with `AC` and matches what's shown in the Dashboard |
+| Wrong Auth Token | Re-copy the Auth Token from the Dashboard; make sure there are no extra spaces |
+| Credentials not encoded correctly | If constructing the header manually, verify the Base64 encoding includes the colon separator between SID and token |
+| Auth Token recently rotated | Update your application or environment variables with the new token |
+| Using another provider's credentials | mycpaas credentials are separate from Twilio and SignalWire — generate new credentials from the [Dashboard](https://developer.mycpaas.io) |

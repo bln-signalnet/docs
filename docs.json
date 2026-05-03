@@ -1,0 +1,81 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "mycpaas",
+  "theme": "luma",
+  "logo": {
+    "light": "https://mycpaas.io/wp-content/uploads/2026/04/logo.png",
+    "dark": "https://mycpaas.io/wp-content/uploads/2026/04/logo-dark.png"
+  },
+  "colors": {
+    "primary": "#657685",
+    "light": "#fcfcfc",
+    "dark": "#1b415f"
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://developer.mycpaas.io"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Messaging",
+            "pages": [
+              "sms/send",
+              "sms/receive"
+            ]
+          },
+          {
+            "group": "Voice",
+            "pages": [
+              "voice/call"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "webhooks/overview",
+              "webhooks/sms",
+              "webhooks/voice"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Reference",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/messages",
+              "api-reference/calls"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "website": "https://mycpaas.io"
+    }
+  },
+  "favicon": {
+    "light": "/images/logo.png",
+    "dark": "/images/logo-dark.png"
+  }
+}

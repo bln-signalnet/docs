@@ -1,0 +1,60 @@
+---
+title: "myCPaaS.io: EU SMS & Voice API for developers"
+description: "myCPaaS.io is a Twilio and SignalWire-compatible SMS and Voice API. Drop-in replacement with the same endpoints — no migration required."
+---
+
+myCPaas.io is a European cloud communications platform that gives you full SMS and Voice capabilities through a REST API that is fully compatible with Twilio and SignalWire. If you already use either of those services, you can switch to myCPaaS by changing a single base URL — your existing code continues to work without modification.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="bolt" href="/quickstart">
+    Send your first SMS in under 5 minutes with a single curl command.
+  </Card>
+
+  <Card title="Authentication" icon="key" href="/authentication">
+    Learn how to authenticate your requests using your Account SID and Auth Token.
+  </Card>
+
+  <Card title="Send SMS" icon="message" href="/sms/send">
+    Send SMS and MMS messages to any phone number worldwide.
+  </Card>
+
+  <Card title="Make a Call" icon="phone" href="/voice/call">
+    Initiate outbound voice calls and control them with LaML XML.
+  </Card>
+
+  <Card title="Webhooks" icon="webhook" href="/webhooks/overview">
+    Receive real-time notifications for inbound messages and call events.
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Full reference for all REST endpoints, parameters, and responses.
+  </Card>
+</CardGroup>
+
+## How it works
+
+mycpaas exposes a REST API at `https://developer.mycpaas.io`. Every request uses HTTP Basic Auth with your Account SID and Auth Token. All endpoints follow the Twilio LaML 2010-04-01 path format, so existing integrations work without changes.
+
+<Steps>
+  <Step title="Get your credentials">
+    Get you [Credentials](https://mycpaas.io/access-request/) and copy your **Account SID** and **Auth Token**.
+  </Step>
+  <Step title="Make your first API call">
+    Use your credentials to send an SMS or initiate a call via the REST API.
+  </Step>
+  <Step title="Set up webhooks">
+    Configure a webhook URL on your account to receive inbound messages and call status updates in real time.
+  </Step>
+</Steps>
+
+## Migrating from Twilio or SignalWire
+
+mycpaas uses the same API surface as Twilio and SignalWire. To migrate, replace your existing base URL with the mycpaas endpoint:
+
+| Provider | Base URL |
+| --- | --- |
+| Twilio | `https://api.twilio.com` |
+| SignalWire | `https://your-space.signalwire.com` |
+| **mycpaas** | `https://developer.mycpaas.io` |
+
+No other code changes are required. Your Account SID, Auth Token, and all API paths remain the same structure.

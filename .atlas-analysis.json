@@ -1,0 +1,77 @@
+{
+  "projectType": "api-service",
+  "projectName": "SignalNet mycpaas",
+  "projectDescription": "A Twilio and SignalWire-compatible SMS and Voice API that lets developers send/receive messages and make calls with a drop-in migration path.",
+  "theme": "luma",
+  "primaryColor": "#657685",
+  "lightColor": "#fcfcfc",
+  "darkColor": "#1b415f",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Messaging",
+            "pages": [
+              "sms/send",
+              "sms/receive"
+            ]
+          },
+          {
+            "group": "Voice",
+            "pages": [
+              "voice/call"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "webhooks/overview",
+              "webhooks/sms",
+              "webhooks/voice"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Reference",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/messages",
+              "api-reference/calls"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Send and receive SMS and MMS messages",
+    "Initiate and manage voice calls",
+    "Twilio and SignalWire drop-in compatible API",
+    "Webhook callbacks for inbound SMS and call status events",
+    "HTTP Basic Auth with Account SID and Auth Token",
+    "Paginated message and call list endpoints",
+    "TwiML/LaML XML response support"
+  ],
+  "publicApiSurface": [
+    "POST /api/laml/2010-04-01/Accounts/{AccountSid}/Messages.json",
+    "GET /api/laml/2010-04-01/Accounts/{AccountSid}/Messages.json",
+    "POST /api/laml/2010-04-01/Accounts/{AccountSid}/Calls.json",
+    "GET /api/laml/2010-04-01/Accounts/{AccountSid}/Calls.json",
+    "Webhook: POST /webhooks/sms (incoming SMS)",
+    "Webhook: POST /webhooks/voice (call status)"
+  ]
+}

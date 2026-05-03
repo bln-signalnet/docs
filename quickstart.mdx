@@ -1,0 +1,91 @@
+---
+title: "Quickstart"
+description: "Send your first SMS in under 3 minutes"
+---
+
+## Prerequisites
+
+You will need:
+- Your **Account SID**
+- Your **Auth Token**
+- A **mycpaas sender number**
+
+---
+
+## Send an SMS
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/{ACCOUNT_SID}/Messages.json \
+  -u ACxxx:AUTH_TOKEN \
+  -d "To=+491234567890" \
+  -d "From=+491098765432" \
+  -d "Body=Hello from mycpaas"
+```
+
+```javascript Node.js
+const axios = require("axios");
+
+const ACCOUNT_SID = "xxxxx";
+const AUTH_TOKEN = "your_auth_token";
+
+async function sendSMS() {
+  const response = await axios.post(
+    `https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/${ACCOUNT_SID}/Messages.json`,
+    new URLSearchParams({
+      To: "+491234567890",
+      From: "+491098765432",
+      Body: "Hello from mycpaas",
+    }),
+    {
+      auth: {
+        username: ACCOUNT_SID,
+        password: AUTH_TOKEN,
+      },
+    }
+  );
+  console.log("Message SID:", response.data.sid);
+}
+
+sendSMS();
+```
+
+```python Python
+import requests
+from requests.auth import HTTPBasicAuth
+
+ACCOUNT_SID = "ACxxx"
+AUTH_TOKEN = "your_auth_token"
+
+url = f"https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/{ACCOUNT_SID}/Messages.json"
+
+response = requests.post(
+    url,
+    data={
+        "To": "+491234567890",
+        "From": "+491098765432",
+        "Body": "Hello from mycpaas",
+    },
+    auth=HTTPBasicAuth(ACCOUNT_SID, AUTH_TOKEN),
+)
+
+print("Message SID:", response.json()["sid"])
+```
+
+</CodeGroup>
+
+---
+
+## Migrating from Twilio or SignalWire
+
+Just replace the **base URL** — everything else stays the same:
+
+| Provider | Old URL | New URL |
+|---|---|---|
+| Twilio | `api.twilio.com` | `developer.mycpaas.io` |
+| SignalWire | `your-space.signalwire.com` | `developer.mycpaas.io` |
+
+<Note>
+Your existing Account SIDs and Auth Tokens remain unchanged.
+</Note>

@@ -1,0 +1,61 @@
+---
+title: "API Overview"
+description: "mycpaas REST API — Twilio & SignalWire compatible"
+---
+
+The mycpaas API is fully compatible with the Twilio and SignalWire REST APIs.
+You can use any Twilio or SignalWire SDK by pointing it at the mycpaas base URL.
+
+## Base URL
+
+All API requests use the following base URL:
+
+https://developer.mycpaas.io
+
+## Authentication
+
+The API uses HTTP Basic Auth. Pass your **Account SID** as the username
+and your **Auth Token** as the password on every request.
+
+```bash
+curl -u YOUR_ACCOUNT_SID:YOUR_AUTH_TOKEN \
+  https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/YOUR_ACCOUNT_SID/Messages.json
+```
+
+You can find your Account SID and Auth Token in the [mycpaas Developer Portal](https://developer.mycpaas.io).
+Keep your Auth Token secret — it grants full access to your account.
+
+## Request format
+
+For `POST` requests, send parameters as URL-encoded form data:
+
+```bash
+curl -X POST https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/YOUR_ACCOUNT_SID/Messages.json \
+  -u YOUR_ACCOUNT_SID:YOUR_AUTH_TOKEN \
+  -d "To=+491234567890" \
+  -d "From=+491098765432" \
+  -d "Body=Hello from mycpaas"
+```
+
+## Response format
+
+All responses are returned as JSON:
+
+```json
+{
+  "sid": "SM_YOUR_MESSAGE_SID",
+  "to": "+491234567890",
+  "from": "+491098765432",
+  "body": "Hello from mycpaas",
+  "status": "queued"
+}
+```
+
+## Migration from Twilio or SignalWire
+
+Just replace the base URL — all endpoints, parameters and SDKs stay identical:
+
+| Provider | Old URL | New URL |
+|---|---|---|
+| Twilio | `api.twilio.com` | `developer.mycpaas.io` |
+| SignalWire | `your-space.signalwire.com` | `developer.mycpaas.io` |

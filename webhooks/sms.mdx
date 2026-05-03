@@ -1,0 +1,83 @@
+---
+title: "SMS webhooks: handle inbound messages"
+description: "mycpaas POSTs inbound SMS and MMS details to your webhook URL. Learn the payload fields, how to parse them, and how to reply with LaML XML."
+---
+
+When an SMS or MMS arrives on your mycpaas number, mycpaas immediately sends an HTTP POST request to your configured webhook URL. Your server receives the message details, decides how to handle them, and can reply with a LaML XML response to send a message back to the sender.
+
+## When this webhook fires
+
+This webhook fires every time an inbound SMS or MMS is received on a mycpaas number. It fires once per message, immediately on receipt.
+
+## Payload fields
+
+mycpaas sends the following fields as `application/x-www-form-urlencoded` in the POST body:
+
+<ParamField body="From" type="string" required>
+  The phone number that sent the message, in E.164 format (e.g., `+491234567890`).
+</ParamField>
+
+<ParamField body="To" type="string" required>
+  Your mycpaas phone number that received the message, in E.164 format (e.g., `+491098765432`).
+</ParamField>
+
+<ParamField body="Body" type="string" required>
+  The text content of the message.
+</ParamField>
+
+<ParamField body="MessageSid" type="string" required>
+  A unique identifier for this message (e.g., `SM123abc...`). Use this to deduplicate retries.
+</ParamField>
+
+## Raw POST payload example
+
+```http
+POST /webhooks/sms HTTP/1.1
+Host: your-server.example.com
+Content-Type: application/x-www-form-urlencoded
+
+From=%2B491234567890&To=%2B491098765432&Body=Hello&MessageSid=SM1234567890abcdef
+```
+
+## Responding with LaML XML
+
+To send a reply back to the sender, return a LaML XML response with `Content-Type: text/xml` and HTTP 200. Wrap your reply text in `<Response><Message>`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>Thanks for your message</Message>
+</Response>
+```
+
+If you don't need to send a reply, return an empty `<Response>` or any HTTP 200 response with an empty body.
+
+## Handler example
+
+The following Express handler parses the inbound payload and replies with a confirmation message:
+
+```javascript
+import express from 'express';
+
+const app = express();
+app.use(express.urlencoded({ extended: false }));
+
+app.post('/webhooks/sms', (req, res) => {
+  const { From, To, Body, MessageSid } = req.body;
+
+  console.log(`Inbound SMS from ${From} to ${To}: ${Body} (${MessageSid})`);
+
+  // Reply with LaML XML
+  res.set('Content-Type', 'text/xml');
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>Thanks for your message</Message>
+</Response>`);
+});
+
+app.listen(3000);
+```
+
+<Note>
+  Your webhook endpoint must respond with HTTP 200 within a few seconds. If it times out or returns an error status, mycpaas may retry the delivery. Use the `MessageSid` field to detect and ignore duplicate requests.
+</Note>

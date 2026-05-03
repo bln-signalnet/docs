@@ -1,0 +1,166 @@
+---
+title: "Send SMS and MMS messages with mycpaas"
+description: "Use the mycpaas Messages API to send SMS and MMS messages worldwide. Includes request parameters, curl examples, response fields, and status values."
+---
+
+Sending a message with mycpaas takes a single HTTP POST request. You provide the destination number, your mycpaas number, and the message body — mycpaas handles routing and delivery. The same endpoint supports both SMS and MMS; adding a `MediaUrl` parameter upgrades the message to MMS automatically.
+
+## Endpoint
+
+```
+POST /api/laml/2010-04-01/Accounts/{AccountSid}/Messages.json
+```
+
+Authenticate using HTTP Basic Auth with your **Account SID** as the username and your **Auth Token** as the password.
+
+### Path parameters
+
+<ParamField path="AccountSid" type="string" required>
+  Your Account SID. Found in the [Dashboard](https://developer.mycpaas.io).
+</ParamField>
+
+### Body parameters
+
+<ParamField body="To" type="string" required>
+  The phone number to send the message to, in E.164 format (e.g. `+491234567890`).
+</ParamField>
+
+<ParamField body="From" type="string" required>
+  Your mycpaas phone number to send the message from, in E.164 format (e.g. `+491098765432`).
+</ParamField>
+
+<ParamField body="Body" type="string" required>
+  The text content of the message. Maximum 1,600 characters for SMS; long messages are split into segments automatically.
+</ParamField>
+
+<ParamField body="MediaUrl" type="string">
+  A publicly accessible URL of the media file to attach. Including this parameter sends an MMS instead of an SMS. Supported types include JPEG, PNG, GIF, and MP4.
+</ParamField>
+
+<ParamField body="StatusCallback" type="string">
+  A URL that mycpaas will send a POST request to whenever the message status changes (e.g. `sent`, `delivered`, `failed`). Use this to track delivery in real time.
+</ParamField>
+
+<Tip>
+  Always use [E.164 format](https://www.twilio.com/docs/glossary/what-e164) for phone numbers: a `+` sign followed by the country code and subscriber number, with no spaces or dashes (e.g. `+491234567890`). Requests with incorrectly formatted numbers will be rejected.
+</Tip>
+
+## Send an SMS
+
+```bash
+curl -X POST https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/ACxxx/Messages.json \
+  -u ACxxx:AUTH_TOKEN \
+  -d "To=+491234567890" \
+  -d "From=+491098765432" \
+  -d "Body=Hello from mycpaas!"
+```
+
+## Send an MMS
+
+Include a `MediaUrl` to attach an image or other media file. The URL must be publicly accessible — mycpaas fetches the file at send time.
+
+```bash
+curl -X POST https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/ACxxx/Messages.json \
+  -u ACxxx:AUTH_TOKEN \
+  -d "To=+491234567890" \
+  -d "From=+491098765432" \
+  -d "Body=Here is your receipt." \
+  -d "MediaUrl=https://example.com/receipt.png"
+```
+
+## Response
+
+A successful request returns HTTP `201 Created` with a JSON object representing the message.
+
+```json
+{
+  "sid": "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "to": "+491234567890",
+  "from": "+491098765432",
+  "body": "Hello from mycpaas!",
+  "status": "queued",
+  "date_created": "2026-04-19T10:00:00Z",
+  "uri": "/api/laml/2010-04-01/Accounts/ACxxx/Messages/SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.json"
+}
+```
+
+<ResponseField name="sid" type="string">
+  A unique identifier for the message, prefixed with `SM`.
+</ResponseField>
+
+<ResponseField name="to" type="string">
+  The destination phone number in E.164 format.
+</ResponseField>
+
+<ResponseField name="from" type="string">
+  The mycpaas number the message was sent from, in E.164 format.
+</ResponseField>
+
+<ResponseField name="body" type="string">
+  The text content of the message.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The current delivery status of the message. See the status table below.
+</ResponseField>
+
+<ResponseField name="date_created" type="string">
+  The ISO 8601 timestamp of when the message was created.
+</ResponseField>
+
+<ResponseField name="uri" type="string">
+  The relative path to fetch this message resource via the API.
+</ResponseField>
+
+### Message status values
+
+| Status | Meaning |
+|--------|---------|
+| `queued` | The message has been accepted and is waiting to be sent. |
+| `sending` | mycpaas is in the process of dispatching the message to the carrier. |
+| `sent` | The message has been handed off to the carrier successfully. |
+| `delivered` | The carrier has confirmed delivery to the recipient's handset. |
+| `failed` | The message could not be sent. Check the error code in the response for details. |
+
+## List messages
+
+Use a GET request to retrieve a paginated list of messages for your account. You can filter results by any combination of the query parameters below.
+
+```bash
+curl -G https://developer.mycpaas.io/api/laml/2010-04-01/Accounts/ACxxx/Messages.json \
+  -u ACxxx:AUTH_TOKEN \
+  -d "To=+491234567890" \
+  -d "Status=delivered" \
+  -d "PageSize=20"
+```
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `To` | string | — | Filter to messages sent to this number (E.164). |
+| `From` | string | — | Filter to messages sent from this number (E.164). |
+| `DateSent` | string | — | Filter to messages sent on this date (`YYYY-MM-DD`). |
+| `Status` | string | — | Filter by status: `queued`, `sending`, `sent`, `delivered`, or `failed`. |
+| `Page` | integer | `0` | The page number to retrieve (zero-indexed). |
+| `PageSize` | integer | `50` | Number of messages per page. |
+
+### List response
+
+```json
+{
+  "page": 0,
+  "page_size": 20,
+  "messages": [
+    {
+      "sid": "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "to": "+491234567890",
+      "from": "+491098765432",
+      "body": "Here is your receipt.",
+      "status": "delivered",
+      "date_created": "2026-04-19T10:00:00Z",
+      "uri": "/api/laml/2010-04-01/Accounts/ACxxx/Messages/SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.json"
+    }
+  ]
+}
+```
